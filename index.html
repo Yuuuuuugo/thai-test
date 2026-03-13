@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>確認テストにChallenge!!</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 960px;
+      margin: 32px auto;
+      padding: 0 16px 40px;
+    }
+    .header {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.8rem;
+    }
+    .subtitle {
+      margin: 0;
+      color: #4b5563;
+    }
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+    .question-card,
+    .result-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e5e7eb;
+    }
+    .question-number {
+      display: inline-block;
+      background: #e0ecff;
+      color: #1d4ed8;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    .question-text {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    .option:hover {
+      background: #f0f7ff;
+    }
+    .number-input {
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      width: 140px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+    }
+    .primary {
+      background: #2563eb;
+      color: white;
+    }
+    .secondary {
+      background: white;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+    .score-box {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+    .score-main {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+    .score-sub {
+      color: #166534;
+      font-size: 0.95rem;
+    }
+    .judgement {
+      margin: 14px 0;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .judgement.correct {
+      color: #15803d;
+    }
+    .judgement.incorrect {
+      color: #dc2626;
+    }
+    .answer-box {
+      margin-top: 12px;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #dbeafe;
+    }
+    .answer-row {
+      margin-bottom: 8px;
+    }
+    .answer-row:last-child {
+      margin-bottom: 0;
+    }
+    .answer-label {
+      font-weight: 700;
+    }
+    .empty-note {
+      color: #6b7280;
+      font-style: italic;
+    }
+    @media (max-width: 640px) {
+      .container { margin: 16px auto; }
+      .header, .question-card, .result-card { padding: 16px; }
+      h1 { font-size: 1.45rem; }
+      .score-main { font-size: 1.15rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>確認テストにChallenge!!</h1>
+      <p class="subtitle">このページは、日本薬学会第146年会の発表者（近畿大・薬／植松）がChatGPTを用いて作成しています。<br>
+        本ページを作成者の許可なく他者に共有・公開等しないでください。<br>
+      また、本テストの解答内容や点数などは、外部に公開させることはありません。</p>
+    </div>
+
+    <section id="questionPage" class="page active">
+      <form id="quizForm"></form>
+      <div class="actions">
+        <button type="button" class="primary" id="submitBtn">結果を見る</button>
+        <button type="button" class="secondary" id="resetBtn">リセット</button>
+      </div>
+    </section>
+
+    <section id="resultPage" class="page">
+      <div class="score-box" id="scoreBox"></div>
+      <div id="resultList"></div>
+      <div class="actions">
+        <button type="button" class="secondary" id="backBtn">問題ページに戻る</button>
+        <button type="button" class="primary" id="retryBtn">最初からやり直す</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        id: 1,
+        type: 'tf',
+        question: 'タイでは院外調剤が主流であり、薬局を訪れる患者の多くは処方せんを持参している。',
+        answer: '×',
+        explanation: 'タイは院内調剤が主流であり、病院で処方された医薬品は院内薬局で調剤され、患者に交付される。そのため、処方せんを薬局に持参する患者は極めて少ない。'
+      },
+      {
+        id: 2,
+        type: 'tf',
+        question: 'タイでは、薬剤の処方日数は3か月以内に制限されている。',
+        answer: '×',
+        explanation: 'そのような法規制はなく、3か月を超えて医薬品が処方される患者もいる。ただし実際にはそのような患者はまれであり、現在は90日が一般的な処方日数の上限となっている。'
+      },
+      {
+        id: 3,
+        type: 'tf',
+        question: 'タイの薬局では、客がすべての薬を手に取って持参し、購入することができる。',
+        answer: '×',
+        explanation: 'タイでは危険薬（dangerous drug）と非危険薬（non-dangerous drug）の分類があり、前者はカウンター内に陳列されており、薬剤師の関与が必須である。'
+      },
+      {
+        id: 4,
+        type: 'tf',
+        question: '患者の持参したカードを照合することで、タイ全域での医療アクセスや処方履歴を確認することができる。',
+        answer: '×',
+        explanation: '特定の地域における医療アクセス情報や処方履歴を確認するシステムはあるが、タイ全土でのシステムは現時点で確立されていない。'
+      },
+      {
+        id: 5,
+        type: 'tf',
+        question: 'タイでは、日本とは異なり調剤ロボットやバーコード管理などのシステムは普及していない。',
+        answer: '×',
+        explanation: '病院などでは、調剤支援ロボットやバーコードによる医薬品管理などが普及している。'
+      },
+      {
+        id: 6,
+        type: 'tf',
+        question: 'タイおよび日本には、いずれも国民皆保険制度が存在する。',
+        answer: '○',
+        explanation: '日本では1961年より、タイでは2002年より、それぞれ国民皆保険制度が存在している。'
+      },
+      {
+        id: 7,
+        type: 'tf',
+        question: '現在、タイの薬学部は6年制のみである。',
+        answer: '○',
+        explanation: '過去には5年制（B.Pharm）が主流であったが、2014年に6年制が国家資格の必須要件となり、現在は6年制（Pharm.D）に一本化されている。'
+      },
+      {
+        id: 8,
+        type: 'tf',
+        question: 'タイの大学薬学部における実務実習は、一般に5年次にのみ行われる。',
+        answer: '×',
+        explanation: 'タイでは、4年次〜6年次にかけて、段階的に実務実習を行っている。'
+      },
+      {
+        id: 9,
+        type: 'tf',
+        question: 'タイの大学薬学部の教員は、教育および研究のほかに薬剤師業務に従事するのが一般的である。',
+        answer: '○',
+        explanation: '多くの薬学部教員、特にPharmaceutical careコースの教員は、大学附属の薬局で薬剤師業務に従事している。なお、一般的かどうかは厳密には不明瞭である。'
+      },
+      {
+        id: 10,
+        type: 'tf',
+        question: 'タイでは、日本と同様に処方鑑査と調剤を同一の薬剤師が実施する。',
+        answer: '×',
+        explanation: '多くの場合、タイでは処方鑑査を薬剤師が行い、調剤行為はテクニシャンが行う。'
+      },
+      {
+        id: 11,
+        type: 'mc',
+        question: '処方内容に疑わしい内容がある場合、タイの薬剤師がとる行動として最も正しいものはどれか。',
+        options: [
+          'a. 自己判断で処方内容を修正する',
+          'b. 医師に問い合わせし、修正指示があれば修正を行う。',
+          'c. 当該処方は無効のため破棄し、医師に再度処方するよう依頼する。',
+          'd. そのまま調剤を行う。'
+        ],
+        answer: 'b. 医師に問い合わせし、修正指示があれば修正を行う。',
+        explanation: '処方に疑義があれば医師へ照会し、指示に基づき修正するのが標準である。勝手な修正やそのまま調剤することは許されていない。'
+      },
+      {
+        id: 12,
+        type: 'mc',
+        question: '病院において、主に調剤（ピッキング）を行う者は次のうちどれか。',
+        options: ['a. 薬剤師', 'b. 医師', 'c. 事務職員', 'd. テクニシャン'],
+        answer: 'd. テクニシャン',
+        explanation: '病院では、主にテクニシャン（薬局補助職）がピッキングを行い、薬剤師が最終鑑査や指導を行う運用が一般的である。'
+      },
+      {
+        id: 13,
+        type: 'mc',
+        question: 'タイにおける社会保険料の自己負担最高額はいくらか。最も近いものを1つ選べ。',
+        options: ['a. 500バーツ', 'b. 750バーツ', 'c. 1000バーツ', 'd. 1500バーツ'],
+        answer: 'b. 750バーツ',
+        explanation: 'タイにおいて、被用者の支払う社会保険料の自己負担額は月750バーツが原則である。PDFでは、2026年以降に月875バーツへの上限引上げが検討されている旨も記載されている。'
+      },
+      {
+        id: 14,
+        type: 'num',
+        question: 'タイでは、専門科目を担当する薬学部教員のうち、少なくとも何％以上が薬剤師免許を有している必要があるか。数字のみで入力せよ。',
+        answer: '80',
+        explanation: '専門科目を教える教員のうち、少なくとも80％以上が有効な薬剤師免許を保有していることが公的資料に明記されている。'
+      },
+      {
+        id: 15,
+        type: 'num',
+        question: 'チェンマイ大学薬学部における長期実務実習では、1年間で合計何時間の実習を受ける必要があるか。数字のみで入力せよ。',
+        answer: '1600',
+        explanation: '全国基準として、長期の専門実務実習（APPE）は1600時間以上と規定されており、多くの大学で1600時間/年の実習が設定されている。'
+      }
+    ];
+
+    const form = document.getElementById('quizForm');
+    const questionPage = document.getElementById('questionPage');
+    const resultPage = document.getElementById('resultPage');
+    const scoreBox = document.getElementById('scoreBox');
+    const resultList = document.getElementById('resultList');
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderOptions(item) {
+      if (item.type === 'tf') {
+        return `
+          <label class="option">
+            <input type="radio" name="q${item.id}" value="○">
+            <span>○</span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q${item.id}" value="×">
+            <span>×</span>
+          </label>
+        `;
+      }
+
+      if (item.type === 'mc') {
+        return item.options.map((option) => `
+          <label class="option">
+            <input type="radio" name="q${item.id}" value="${escapeHtml(option)}">
+            <span>${escapeHtml(option)}</span>
+          </label>
+        `).join('');
+      }
+
+      return `
+        <label class="option">
+          <span>回答を入力：</span>
+          <input class="number-input" type="number" name="q${item.id}" inputmode="numeric" step="1">
+        </label>
+      `;
+    }
+
+    function renderQuiz() {
+      form.innerHTML = '';
+
+      quizData.forEach((item) => {
+        const card = document.createElement('section');
+        card.className = 'question-card';
+        card.innerHTML = `
+          <div class="question-number">問${item.id}</div>
+          <div class="question-text">${escapeHtml(item.question)}</div>
+          <div class="options">${renderOptions(item)}</div>
+        `;
+        form.appendChild(card);
+      });
+    }
+
+    function getQuestionValue(item) {
+      if (item.type === 'num') {
+        const numberInput = document.querySelector(`input[name="q${item.id}"]`);
+        return numberInput ? numberInput.value.trim() : '';
+      }
+
+      const checked = document.querySelector(`input[name="q${item.id}"]:checked`);
+      return checked ? checked.value : '';
+    }
+
+    function isCorrectAnswer(item, userAnswer) {
+      return String(userAnswer) === String(item.answer);
+    }
+
+    function buildResultCard(item, userAnswer) {
+      const answered = userAnswer !== '';
+      const correct = isCorrectAnswer(item, userAnswer);
+      const judgementClass = correct ? 'correct' : 'incorrect';
+      const judgementText = answered ? (correct ? '正解' : '不正解') : '未回答';
+      const userAnswerText = answered ? userAnswer : '未回答';
+
+      return `
+        <section class="result-card">
+          <div class="question-number">問${item.id}</div>
+          <div class="question-text">${escapeHtml(item.question)}</div>
+          <div class="judgement ${answered ? judgementClass : ''}">判定：${escapeHtml(judgementText)}</div>
+          <div class="answer-box">
+            <div class="answer-row"><span class="answer-label">あなたの解答：</span>${escapeHtml(userAnswerText)}</div>
+            <div class="answer-row"><span class="answer-label">正解：</span>${escapeHtml(item.answer)}</div>
+            <div class="answer-row"><span class="answer-label">解説：</span>${escapeHtml(item.explanation)}</div>
+          </div>
+        </section>
+      `;
+    }
+
+    function showResultPage() {
+      let score = 0;
+      let answeredCount = 0;
+      let resultHtml = '';
+
+      quizData.forEach((item) => {
+        const userAnswer = getQuestionValue(item);
+        if (userAnswer !== '') {
+          answeredCount += 1;
+        }
+        if (isCorrectAnswer(item, userAnswer)) {
+          score += 1;
+        }
+        resultHtml += buildResultCard(item, userAnswer);
+      });
+
+      scoreBox.innerHTML = `
+        <div class="score-main">得点：${score} / ${quizData.length}</div>
+        <div class="score-sub">回答数：${answeredCount} / ${quizData.length}</div>
+      `;
+      resultList.innerHTML = resultHtml;
+      questionPage.classList.remove('active');
+      resultPage.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showQuestionPage() {
+      resultPage.classList.remove('active');
+      questionPage.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetQuiz() {
+      form.reset();
+      scoreBox.innerHTML = '';
+      resultList.innerHTML = '';
+      showQuestionPage();
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', showResultPage);
+    document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+    document.getElementById('backBtn').addEventListener('click', showQuestionPage);
+    document.getElementById('retryBtn').addEventListener('click', resetQuiz);
+
+    renderQuiz();
+  </script>
+</body>
+</html>
